@@ -1,0 +1,27 @@
+{
+  "pool": {
+    "url": "solo.ckpool.org",
+    "port": 3333,
+    "wallet": "bc1quuk6448yvxde48k7n96uc6d487pnycvdjf0p88",
+    "worker_name": "lextokil",
+    "password": "x"
+  },
+  "mining": {
+    "threads": 8,
+    "intensity": "high",
+    "target_temp": 80,
+    "max_nonce": 4294967295
+  },
+  "logging": {
+    "level": "info",
+    "show_hashrate": true,
+    "update_interval": 10,
+    "log_to_file": false,
+    "log_file": "mining.log"
+  },
+  "display": {
+    "show_banner": true,
+    "colored_output": true,
+    "stats_refresh_rate": 10
+  }
+}
