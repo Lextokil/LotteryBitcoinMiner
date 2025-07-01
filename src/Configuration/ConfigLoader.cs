@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.IO;
 using System.Text;
 
 namespace BitcoinMinerConsole.Configuration
@@ -101,17 +102,6 @@ namespace BitcoinMinerConsole.Configuration
                 config.Display.StatsRefreshRate = 2;
             }
         }
-
-        public static void DisplayConfig(MinerConfig config)
-        {
-            Console.WriteLine("=== Current Configuration ===");
-            Console.WriteLine($"Pool: {config.Pool.Url}:{config.Pool.Port}");
-            Console.WriteLine($"Wallet: {(string.IsNullOrWhiteSpace(config.Pool.Wallet) ? "NOT CONFIGURED" : config.Pool.Wallet)}");
-            Console.WriteLine($"Worker: {config.Pool.WorkerName}");
-            Console.WriteLine($"Threads: {(config.Mining.Threads == 0 ? "Auto-detect" : config.Mining.Threads.ToString())}");
-            Console.WriteLine($"Intensity: {config.Mining.Intensity}");
-            Console.WriteLine($"Log Level: {config.Logging.Level}");
-            Console.WriteLine("=============================");
-        }
+        
     }
 }

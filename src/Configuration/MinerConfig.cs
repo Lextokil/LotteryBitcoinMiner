@@ -15,6 +15,9 @@ namespace BitcoinMinerConsole.Configuration
 
         [JsonProperty("display")]
         public DisplaySettings Display { get; set; } = new DisplaySettings();
+
+        [JsonProperty("statistics")]
+        public StatisticsSettings Statistics { get; set; } = new StatisticsSettings();
     }
 
     public class PoolSettings
@@ -48,6 +51,18 @@ namespace BitcoinMinerConsole.Configuration
 
         [JsonProperty("max_nonce")]
         public uint MaxNonce { get; set; } = uint.MaxValue;
+
+        [JsonProperty("random_seed")]
+        public int? RandomSeed { get; set; } = null; // null = use timestamp
+
+        [JsonProperty("avoid_recent_duplicates")]
+        public bool AvoidRecentDuplicates { get; set; } = true;
+
+        [JsonProperty("duplicate_cache_size")]
+        public int DuplicateCacheSize { get; set; } = 1000000;
+
+        [JsonProperty("nonce_batch_size")]
+        public int NonceBatchSize { get; set; } = 1000;
     }
 
     public class LoggingSettings
@@ -78,5 +93,14 @@ namespace BitcoinMinerConsole.Configuration
 
         [JsonProperty("stats_refresh_rate")]
         public int StatsRefreshRate { get; set; } = 2;
+    }
+
+    public class StatisticsSettings
+    {
+        [JsonProperty("best_worker_difficulty")]
+        public double BestWorkerDifficulty { get; set; } = 0.0;
+
+        [JsonProperty("best_difficulty_date")]
+        public DateTime? BestDifficultyDate { get; set; } = null;
     }
 }

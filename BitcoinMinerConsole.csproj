@@ -1,12 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyTitle>Bitcoin Miner Console</AssemblyTitle>
-    <AssemblyDescription>A real Bitcoin miner console application connecting to solo.ckpool</AssemblyDescription>
+    <UseWPF>true</UseWPF>
+    <StartupObject>BitcoinMinerConsole.Program</StartupObject>
+    <AssemblyTitle>Bitcoin Miner WPF</AssemblyTitle>
+    <AssemblyDescription>A real Bitcoin miner WPF application connecting to solo.ckpool</AssemblyDescription>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>

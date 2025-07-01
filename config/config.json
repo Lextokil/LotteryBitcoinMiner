@@ -7,21 +7,25 @@
     "password": "x"
   },
   "mining": {
-    "threads": 8,
+    "threads": 10,
     "intensity": "high",
     "target_temp": 80,
-    "max_nonce": 4294967295
+    "max_nonce": 4294967295,
+    "random_seed": null,
+    "avoid_recent_duplicates": true,
+    "duplicate_cache_size": 1000000,
+    "nonce_batch_size": 1000
   },
   "logging": {
     "level": "info",
     "show_hashrate": true,
-    "update_interval": 10,
+    "update_interval": 5,
     "log_to_file": false,
     "log_file": "mining.log"
   },
   "display": {
     "show_banner": true,
     "colored_output": true,
-    "stats_refresh_rate": 10
+    "stats_refresh_rate": 2
   }
 }

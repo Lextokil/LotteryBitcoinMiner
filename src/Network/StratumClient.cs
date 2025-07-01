@@ -1,9 +1,7 @@
-using System.Collections;
 using System.Net.Sockets;
 using System.Text;
 using BitcoinMinerConsole.Configuration;
 using BitcoinMinerConsole.Core;
-using Newtonsoft.Json.Linq;
 
 namespace BitcoinMinerConsole.Network
 {
@@ -25,14 +23,10 @@ namespace BitcoinMinerConsole.Network
 
         // Events
         public event Action<WorkItem>? WorkReceived;
-        public event Action<double>? DifficultyChanged;
+        public event Action<double>? PoolShareDifficultyChanged;
         public event Action<bool, string>? ShareResult;
         public event Action<string>? StatusChanged;
         public event Action<string>? ErrorOccurred;
-
-        // Current work
-        public WorkItem? CurrentWork { get; private set; }
-        public double CurrentDifficulty { get; private set; } = 1.0;
 
         public bool IsConnected => _isConnected;
         public bool IsSubscribed => _isSubscribed;
@@ -179,7 +173,7 @@ namespace BitcoinMinerConsole.Network
                 _messageId++;
                 
                 SendMessage(submitMessage);
-                StatusChanged?.Invoke($"Submit (Difficulty {CurrentDifficulty:F2})");
+                //StatusChanged?.Invoke($"Submit (Difficulty {CurrentPoolDifficulty:F2})");
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -214,22 +208,6 @@ namespace BitcoinMinerConsole.Network
                     await Task.Delay(1000);
                     await ConnectAsync();
                 });
-            }
-        }
-
-        private void StartAsyncRead()
-        {
-            if (_stream == null || !_isConnected)
-                return;
-
-            try
-            {
-                var buffer = new byte[_tcpClient!.ReceiveBufferSize];
-                _stream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
-            }
-            catch (Exception ex)
-            {
-                ErrorOccurred?.Invoke($"Failed to start async read: {ex.Message}");
             }
         }
 
@@ -359,6 +337,8 @@ namespace BitcoinMinerConsole.Network
                     case StratumMethods.Submit:
                         var submitResult = message.Result?.ToString();
                         bool accepted = submitResult?.ToLower() == "true";
+                        // This is the ORIGIN of share statistics - only pool responses count
+                        // ShareResult event is the single source of truth for share counting
                         ShareResult?.Invoke(accepted, accepted ? "Share accepted" : "Share rejected");
                         break;
                 }
@@ -374,11 +354,11 @@ namespace BitcoinMinerConsole.Network
             switch (message.Method)
             {
                 case StratumMethods.Notify:
-                    HandleMiningNotify(message);
+                    HandleMiningNotify(message); // Ok
                     break;
                     
                 case StratumMethods.SetDifficulty:
-                    HandleSetDifficulty(message);
+                    HandleSetPoolDifficulty(message);
                     break;
                     
                 case StratumMethods.Reconnect:
@@ -413,9 +393,10 @@ namespace BitcoinMinerConsole.Network
                 var extranonce2 = GenerateExtraNonce2();
                 var coinbaseTransaction = coinbase1 + extranonce2 + coinbase2;
 
-                var work = new WorkItem(jobId, prevHash, coinbaseTransaction, merkleTree, version, bits, time);
-                work.ExtraNonce2 = extranonce2; // Store for later submission
-                CurrentWork = work;
+                var work = new WorkItem(jobId, prevHash, coinbaseTransaction, merkleTree, version, bits, time)
+                {
+                    ExtraNonce2 = extranonce2 // Store for later submission
+                };
                 
                 WorkReceived?.Invoke(work);
                 StatusChanged?.Invoke($"New work received (Job: {jobId}, Clean: {cleanJobs})");
@@ -431,15 +412,14 @@ namespace BitcoinMinerConsole.Network
             }
         }
 
-        private void HandleSetDifficulty(StratumMessage message)
+        private void HandleSetPoolDifficulty(StratumMessage message)
         {
             try
             {
                 var difficulty = message.GetParam<double>(0);
                 if (difficulty > 0)
                 {
-                    CurrentDifficulty = difficulty;
-                    DifficultyChanged?.Invoke(difficulty);
+                    PoolShareDifficultyChanged?.Invoke(difficulty);
                     StatusChanged?.Invoke($"Difficulty changed to {difficulty:F2}");
                 }
             }

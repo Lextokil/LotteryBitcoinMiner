@@ -14,19 +14,30 @@ namespace BitcoinMinerConsole.Core
         public uint StartNonce { get; set; }
         public uint EndNonce { get; set; }
         public byte[] Target { get; set; } = new byte[32];
-        public double Difficulty { get; set; }
+        public double Difficulty { get; set; } = 1.0;
+        
+        public byte[] PoolShareTarget { get; set; } = new byte[32];
+        public double PoolShareDifficulty { get; set; } = 1.0;
         public string ExtraNonce2 { get; set; } = "";
         
         // Computed values
-        public string MerkleRoot { get; private set; } = "";
+        public string MerkleRoot { get; set; } = "";
         public byte[] BlockHeader { get; private set; } = new byte[80];
 
         public WorkItem()
         {
         }
 
-        public WorkItem(string jobId, string previousBlockHash, string coinbaseTransaction, 
-                       string[] merkleTree, string version, string bits, string time)
+        public WorkItem
+            (
+                string jobId,
+                string previousBlockHash,
+                string coinbaseTransaction,
+                string[] merkleTree,
+                string version,
+                string bits,
+                string time
+            )
         {
             JobId = jobId;
             PreviousBlockHash = previousBlockHash;
@@ -121,6 +132,47 @@ namespace BitcoinMinerConsole.Core
             // Rest are zeros
 
             Difficulty = CalculateDifficulty(maxTarget, Target);
+        }
+
+        public void UpdatePoolShareTargetAndDificulty(double poolDifficulty)
+        {
+            if (poolDifficulty <= 0)
+                return;
+
+            // Calculate target from pool difficulty
+            // Target = max_target / difficulty
+            var maxTarget = new byte[32];
+            maxTarget[0] = 0x00;
+            maxTarget[1] = 0x00;
+            maxTarget[2] = 0x00;
+            maxTarget[3] = 0xFF;
+            maxTarget[4] = 0xFF;
+            // Rest are zeros
+
+            // Convert max target to big integer value
+            double maxTargetValue = 0;
+            for (int i = 0; i < 32; i++)
+            {
+                maxTargetValue = maxTargetValue * 256 + maxTarget[i];
+            }
+
+            // Calculate new target value
+            double newTargetValue = maxTargetValue / poolDifficulty;
+
+            // Convert back to byte array
+            PoolShareTarget = new byte[32];
+            double tempValue = newTargetValue;
+            
+            // Fill target bytes from least significant to most significant
+            for (int i = 31; i >= 0; i--)
+            {
+                PoolShareTarget[i] = (byte)(tempValue % 256);
+                tempValue = Math.Floor(tempValue / 256);
+                if (tempValue == 0) break;
+            }
+
+            // Update difficulty to match pool difficulty
+            PoolShareDifficulty = poolDifficulty;
         }
 
         public void PrepareBlockHeader(uint nonce)
@@ -240,7 +292,7 @@ namespace BitcoinMinerConsole.Core
 
         public override string ToString()
         {
-            return $"Job: {JobId}, Difficulty: {Difficulty:F2}, Target: {BytesToHexString(Target)[..16]}...";
+            return $"Job: {JobId}, Difficulty: {Difficulty:F2}, Target: {BytesToHexString(Target)}";
         }
     }
 }

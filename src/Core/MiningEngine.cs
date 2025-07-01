@@ -7,22 +7,25 @@ namespace BitcoinMinerConsole.Core
     public class MiningEngine : IDisposable
     {
         private readonly MinerConfig _config;
-        private readonly ConsoleLogger _logger;
-        private readonly StatsDisplay _statsDisplay;
+        private readonly ILogger _logger;
+        private readonly IStatsDisplay _statsDisplay;
         private readonly List<MinerWorker> _workers;
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private WorkItem? _currentWork;
+        private WorkItem? _currentWorkItem;
         private readonly object _workLock = new object();
         private bool _isRunning = false;
+
+        public WorkItem? CurrentWorkItem => _currentWorkItem;
 
         // Events
         public event Action<uint, string>? ShareFound;
         public event Action<double>? HashrateUpdated;
+        public event Action<int, double>? BestDifficultyFound;
 
         public bool IsRunning => _isRunning;
         public int ActiveWorkers => _workers.Count(w => w.IsRunning);
 
-        public MiningEngine(MinerConfig config, ConsoleLogger logger, StatsDisplay statsDisplay)
+        public MiningEngine(MinerConfig config, ILogger logger, IStatsDisplay statsDisplay)
         {
             _config = config;
             _logger = logger;
@@ -96,10 +99,14 @@ namespace BitcoinMinerConsole.Core
         {
             lock (_workLock)
             {
-                _currentWork = work;
+                if (_currentWorkItem is not null)
+                {
+                    work.PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty;
+                    work.PoolShareTarget = _currentWorkItem.PoolShareTarget;
+                }
+                _currentWorkItem = work;
                 _logger.LogMining($"New work assigned: {work}");
                 _statsDisplay.UpdateJob(work.JobId);
-                _statsDisplay.UpdateDifficulty(work.Difficulty);
 
                 // Distribute work to all workers
                 uint nonceRange = uint.MaxValue / (uint)Math.Max(_workers.Count, 1);
@@ -108,25 +115,43 @@ namespace BitcoinMinerConsole.Core
                     uint startNonce = (uint)i * nonceRange;
                     uint endNonce = (i == _workers.Count - 1) ? uint.MaxValue : (uint)(i + 1) * nonceRange - 1;
                     
-                    var workerWork = new WorkItem
+                    var workItem = new WorkItem
                     {
-                        JobId = work.JobId,
-                        PreviousBlockHash = work.PreviousBlockHash,
-                        CoinbaseTransaction = work.CoinbaseTransaction,
-                        MerkleTree = work.MerkleTree,
-                        Version = work.Version,
-                        Bits = work.Bits,
-                        Time = work.Time,
+                        JobId = _currentWorkItem.JobId,
+                        PreviousBlockHash = _currentWorkItem.PreviousBlockHash,
+                        CoinbaseTransaction = _currentWorkItem.CoinbaseTransaction,
+                        MerkleTree = _currentWorkItem.MerkleTree,
+                        Version = _currentWorkItem.Version,
+                        Bits = _currentWorkItem.Bits,
+                        Time = _currentWorkItem.Time,
                         StartNonce = startNonce,
                         EndNonce = endNonce,
-                        Target = work.Target,
-                        Difficulty = work.Difficulty
+                        Target = _currentWorkItem.Target,
+                        Difficulty = _currentWorkItem.Difficulty,
+                        PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty,
+                        PoolShareTarget = _currentWorkItem.PoolShareTarget,
+                        MerkleRoot = _currentWorkItem.MerkleRoot
+                        
                     };
                     
-                    workerWork.ComputeMerkleRoot();
-                    workerWork.ComputeTarget();
-                    
-                    _workers[i].SetWork(workerWork);
+                    _workers[i].SetWork(workItem);
+                }
+            }
+        }
+
+        public void UpdateWorkItemPoolShareDificulty(double newDifficulty)
+        {
+            lock (_workLock)
+            {
+                if (_currentWorkItem != null)
+                {
+                    _currentWorkItem.UpdatePoolShareTargetAndDificulty(newDifficulty);
+                    // Update all workers with new difficulty
+                    foreach (var worker in _workers)
+                    {
+                        worker.CurrentWork.PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty;
+                        worker.CurrentWork.PoolShareTarget = _currentWorkItem.PoolShareTarget;
+                    }
                 }
             }
         }
@@ -135,11 +160,11 @@ namespace BitcoinMinerConsole.Core
         {
             lock (_workLock)
             {
-                if (_currentWork != null)
+                if (_currentWorkItem != null)
                 {
                     _logger.LogShare($"Share found by worker {workerId}: nonce={nonce:x8}", true);
                     ShareFound?.Invoke(nonce, extraNonce2);
-                    _statsDisplay.ShareAccepted();
+                    // Note: Share statistics will be updated only when pool responds
                 }
             }
         }
@@ -151,8 +176,11 @@ namespace BitcoinMinerConsole.Core
 
         private void OnBestDifficultyFound(int workerId, double difficulty)
         {
-            _statsDisplay.UpdateBestWorkerDifficulty(difficulty);
+            _statsDisplay.UpdateBestWorkerDifficulty(workerId, difficulty);
             _logger.LogInfo($"Worker {workerId} achieved difficulty: {difficulty:N2}");
+            
+            // Notify about potential new best difficulty record
+            BestDifficultyFound?.Invoke(workerId, difficulty);
         }
 
         private async Task MonitorHashrateAsync()
@@ -208,19 +236,8 @@ namespace BitcoinMinerConsole.Core
             }
         }
 
-        public void OnShareResult(bool accepted, string message)
-        {
-            if (accepted)
-            {
-                _statsDisplay.ShareAccepted();
-                _logger.LogShare(message, true);
-            }
-            else
-            {
-                _statsDisplay.ShareRejected();
-                _logger.LogShare(message, false);
-            }
-        }
+        // Removed OnShareResult method - share statistics are now updated 
+        // only by the pool response in MainWindow via StratumClient.ShareResult event
 
         public void Dispose()
         {
@@ -229,152 +246,4 @@ namespace BitcoinMinerConsole.Core
         }
     }
 
-    public class MinerWorker
-    {
-        private readonly int _workerId;
-        private readonly MinerConfig _config;
-        private readonly ConsoleLogger _logger;
-        private readonly CancellationToken _cancellationToken;
-        private Task? _miningTask;
-        private WorkItem? _currentWork;
-        private readonly object _workLock = new object();
-        private bool _isRunning = false;
-        private long _totalHashes = 0;
-        private double _currentHashrate = 0;
-        private DateTime _lastHashrateUpdate = DateTime.Now;
-
-        // Events
-        public event Action<int, uint, string>? ShareFound;
-        public event Action<int, double>? HashrateUpdated;
-        public event Action<int, double>? BestDifficultyFound;
-
-        public bool IsRunning => _isRunning;
-        public long TotalHashes => _totalHashes;
-        public double CurrentHashrate => _currentHashrate;
-
-        public MinerWorker(int workerId, MinerConfig config, ConsoleLogger logger, CancellationToken cancellationToken)
-        {
-            _workerId = workerId;
-            _config = config;
-            _logger = logger;
-            _cancellationToken = cancellationToken;
-        }
-
-        public void Start()
-        {
-            if (_isRunning)
-                return;
-
-            _isRunning = true;
-            _miningTask = Task.Run(MineAsync, _cancellationToken);
-        }
-
-        public void Stop()
-        {
-            _isRunning = false;
-            _miningTask?.Wait(5000);
-        }
-
-        public void SetWork(WorkItem work)
-        {
-            lock (_workLock)
-            {
-                _currentWork = work;
-            }
-        }
-
-        private async Task MineAsync()
-        {
-            var hashCount = 0;
-            var stopwatch = Stopwatch.StartNew();
-
-            while (_isRunning && !_cancellationToken.IsCancellationRequested)
-            {
-                WorkItem? work;
-                lock (_workLock)
-                {
-                    work = _currentWork;
-                }
-
-                if (work == null)
-                {
-                    await Task.Delay(100, _cancellationToken);
-                    continue;
-                }
-
-                try
-                {
-                    // Mine a batch of nonces
-                    const int batchSize = 1000;
-                    for (uint nonce = work.StartNonce; nonce <= work.EndNonce && _isRunning; nonce++)
-                    {
-                        // Prepare block header with current nonce
-                        work.PrepareBlockHeader(nonce);
-                        
-                        // Hash the block header
-                        var hash = SHA256Hasher.HashBlockHeader(work.BlockHeader);
-                        
-                        hashCount++;
-                        Interlocked.Increment(ref _totalHashes);
-
-                        // Calculate hash difficulty for tracking best worker performance
-                        var hashDifficulty = work.CalculateHashDifficulty(hash);
-                        
-                        // Check if hash meets target
-                        if (work.IsValidHash(hash))
-                        {
-                            var hashHex = SHA256Hasher.HashToHexString(hash);
-                            _logger.LogSuccess($"Worker {_workerId} found valid hash: {hashHex} (Difficulty: {hashDifficulty:N2})");
-                            ShareFound?.Invoke(_workerId, nonce, "00000000");
-                        }
-                        
-                        // Update best worker difficulty if this hash is better
-                        if (hashDifficulty > 1.0) // Only track meaningful difficulties
-                        {
-                            BestDifficultyFound?.Invoke(_workerId, hashDifficulty);
-                        }
-
-                        // Update hashrate periodically
-                        if (hashCount >= batchSize)
-                        {
-                            UpdateHashrate(hashCount, stopwatch.Elapsed);
-                            hashCount = 0;
-                            stopwatch.Restart();
-
-                            // Small delay to prevent CPU overload
-                            if (_config.Mining.Intensity.ToLower() != "high")
-                            {
-                                await Task.Delay(1, _cancellationToken);
-                            }
-                        }
-
-                        // Check for cancellation periodically
-                        if (nonce % 10000 == 0)
-                        {
-                            _cancellationToken.ThrowIfCancellationRequested();
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Worker {_workerId} mining error: {ex.Message}");
-                    await Task.Delay(1000, _cancellationToken);
-                }
-            }
-        }
-
-        private void UpdateHashrate(int hashes, TimeSpan elapsed)
-        {
-            if (elapsed.TotalSeconds > 0)
-            {
-                _currentHashrate = hashes / elapsed.TotalSeconds;
-                HashrateUpdated?.Invoke(_workerId, _currentHashrate);
-                _lastHashrateUpdate = DateTime.Now;
-            }
-        }
-    }
 }

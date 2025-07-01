@@ -33,34 +33,7 @@ namespace BitcoinMinerConsole.Network
                 Params = new JArray(parameters)
             };
         }
-
-        public static StratumMessage CreateResponse(object id, object result)
-        {
-            return new StratumMessage
-            {
-                Id = id,
-                Result = result
-            };
-        }
-
-        public static StratumMessage CreateErrorResponse(object id, object error)
-        {
-            return new StratumMessage
-            {
-                Id = id,
-                Error = error
-            };
-        }
-
-        public static StratumMessage CreateNotification(string method, params object[] parameters)
-        {
-            return new StratumMessage
-            {
-                Method = method,
-                Params = new JArray(parameters)
-            };
-        }
-
+   
         public string ToJson()
         {
             return JsonConvert.SerializeObject(this, Formatting.None, new JsonSerializerSettings
@@ -101,11 +74,6 @@ namespace BitcoinMinerConsole.Network
             return GetParam<string>(index) ?? "";
         }
 
-        public int GetParamAsInt(int index)
-        {
-            return GetParam<int>(index);
-        }
-
         public bool GetParamAsBool(int index)
         {
             return GetParam<bool>(index);
@@ -139,23 +107,7 @@ namespace BitcoinMinerConsole.Network
             return "Unknown message type";
         }
     }
-
-    public static class StratumMethods
-    {
-        // Client to server methods
-        public const string Subscribe = "mining.subscribe";
-        public const string Authorize = "mining.authorize";
-        public const string Submit = "mining.submit";
-        public const string ExtraNonceSubscribe = "mining.extranonce.subscribe";
-
-        // Server to client methods
-        public const string Notify = "mining.notify";
-        public const string SetDifficulty = "mining.set_difficulty";
-        public const string SetExtraNonce = "mining.set_extranonce";
-        public const string Reconnect = "client.reconnect";
-        public const string GetVersion = "client.get_version";
-        public const string ShowMessage = "client.show_message";
-    }
+   
 
     public class StratumError
     {
