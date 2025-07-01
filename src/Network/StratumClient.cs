@@ -152,7 +152,7 @@ namespace BitcoinMinerConsole.Network
             }
         }
 
-        public Task<bool> SubmitShareAsync(WorkItem work, uint nonce, string extraNonce2)
+        public Task<bool> SubmitShareAsync(WorkItem work, uint nonce, double difficulty)
         {
             if (!_isAuthorized || work == null)
                 return Task.FromResult(false);
@@ -164,7 +164,7 @@ namespace BitcoinMinerConsole.Network
                     StratumMethods.Submit,
                     _config.Pool.Wallet,
                     work.JobId,
-                    extraNonce2,
+                    work.ExtraNonce2,
                     work.Time,
                     nonce.ToString("x8")
                 );
@@ -173,7 +173,7 @@ namespace BitcoinMinerConsole.Network
                 _messageId++;
                 
                 SendMessage(submitMessage);
-                //StatusChanged?.Invoke($"Submit (Difficulty {CurrentPoolDifficulty:F2})");
+                StatusChanged?.Invoke($"Submit (Difficulty {difficulty:F2}) from: {work.PoolShareDifficulty}");
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -358,15 +358,15 @@ namespace BitcoinMinerConsole.Network
                     break;
                     
                 case StratumMethods.SetDifficulty:
-                    HandleSetPoolDifficulty(message);
+                    HandleSetPoolDifficulty(message); // Ok
                     break;
                     
                 case StratumMethods.Reconnect:
-                    Task.Run(async () => await HandleReconnect(message));
+                    Task.Run(async () => await HandleReconnect()); // Ok
                     break;
                     
                 case StratumMethods.ShowMessage:
-                    HandleShowMessage(message);
+                    HandleShowMessage(message); // Ok
                     break;
             }
         }
@@ -429,7 +429,7 @@ namespace BitcoinMinerConsole.Network
             }
         }
 
-        private async Task HandleReconnect(StratumMessage message)
+        private async Task HandleReconnect()
         {
             StatusChanged?.Invoke("Pool requested reconnection");
             await DisconnectAsync();

@@ -28,7 +28,7 @@ namespace BitcoinMinerConsole.Logging
 
         public void LogError(string message)
         {
-            _mainWindow.Dispatcher.Invoke(() => _mainWindow.LogPoolEvent($"ERROR: {message}"));
+            _mainWindow.Dispatcher.Invoke(() => _mainWindow.LogMiningEvent($"ERROR: {message}"));
         }
 
         public void LogNetwork(string message)

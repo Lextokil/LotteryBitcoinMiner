@@ -1,7 +1,7 @@
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using BitcoinMinerConsole.Configuration;
-using System.Text.Json;
-using System.IO;
 
 namespace BitcoinMinerConsole.UI
 {
@@ -31,7 +31,6 @@ namespace BitcoinMinerConsole.UI
 
             // Mining Configuration
             ThreadsTextBox.Text = _config.Mining.Threads.ToString();
-            IntensityTextBox.Text = _config.Mining.Intensity;
 
             // Display Configuration
             ShowBannerCheckBox.IsChecked = _config.Display.ShowBanner;
@@ -70,14 +69,6 @@ namespace BitcoinMinerConsole.UI
                     return false;
                 }
                 _config.Mining.Threads = threads;
-
-                if (!int.TryParse(IntensityTextBox.Text, out int intensity) || intensity <= 0)
-                {
-                    MessageBox.Show("Invalid intensity. Please enter a positive number.", 
-                        "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return false;
-                }
-                _config.Mining.Intensity = IntensityTextBox.Text.Trim();
 
                 // Display Configuration
                 _config.Display.ShowBanner = ShowBannerCheckBox.IsChecked ?? false;
@@ -174,8 +165,7 @@ namespace BitcoinMinerConsole.UI
                 },
                 Mining = new MiningSettings
                 {
-                    Threads = Environment.ProcessorCount,
-                    Intensity = "high"
+                    Threads = Environment.ProcessorCount
                 },
                 Display = new DisplaySettings
                 {
@@ -203,7 +193,6 @@ namespace BitcoinMinerConsole.UI
 
             // Mining Configuration
             destination.Mining.Threads = source.Mining.Threads;
-            destination.Mining.Intensity = source.Mining.Intensity;
 
             // Display Configuration
             destination.Display.ShowBanner = source.Display.ShowBanner;

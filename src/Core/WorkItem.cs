@@ -214,9 +214,9 @@ namespace BitcoinMinerConsole.Core
             // Compare hash with target (both in big-endian)
             for (int i = 0; i < 32; i++)
             {
-                if (hash[i] < Target[i])
+                if (hash[i] < PoolShareTarget[i])
                     return true;
-                if (hash[i] > Target[i])
+                if (hash[i] > PoolShareTarget[i])
                     return false;
             }
             return true; // Equal is also valid

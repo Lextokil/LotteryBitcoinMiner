@@ -228,11 +228,10 @@ namespace BitcoinMinerConsole.UI
             };
 
             // Mining engine events
-            _miningEngine.ShareFound += async (nonce, extraNonce2) => {
+            _miningEngine.ShareFound += async (nonce, difficulty) => {
                 if (_miningEngine.CurrentWorkItem != null)
                 {
-                    var workExtraNonce2 = _miningEngine.CurrentWorkItem.ExtraNonce2;
-                    await _stratumClient.SubmitShareAsync(_miningEngine.CurrentWorkItem, nonce, workExtraNonce2);
+                    await _stratumClient.SubmitShareAsync(_miningEngine.CurrentWorkItem, nonce, difficulty);
                     Dispatcher.Invoke(() => LogMiningEvent($"Share found! Nonce: {nonce:x8}"));
                 }
             };
@@ -408,8 +407,15 @@ namespace BitcoinMinerConsole.UI
             MiningEventsScrollViewer.ScrollToEnd();
         }
 
-        public void UpdateStats(string hashrate, string avgHashrate, string totalHashes, 
-            string sharesAccepted, string sharesRejected, string uptime)
+        public void UpdateStats
+        (
+            string hashrate,
+            string avgHashrate,
+            string totalHashes, 
+            string sharesAccepted,
+            string sharesRejected,
+            string uptime
+        )
         {
             HashrateText.Text = hashrate;
             AvgHashrateText.Text = avgHashrate;

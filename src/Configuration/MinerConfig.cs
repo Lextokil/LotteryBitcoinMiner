@@ -43,9 +43,6 @@ namespace BitcoinMinerConsole.Configuration
         [JsonProperty("threads")]
         public int Threads { get; set; } = 0; // 0 = auto-detect
 
-        [JsonProperty("intensity")]
-        public string Intensity { get; set; } = "high";
-
         [JsonProperty("target_temp")]
         public int TargetTemp { get; set; } = 80;
 

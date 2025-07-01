@@ -18,7 +18,7 @@ namespace BitcoinMinerConsole.Core
         public WorkItem? CurrentWorkItem => _currentWorkItem;
 
         // Events
-        public event Action<uint, string>? ShareFound;
+        public event Action<uint, double>? ShareFound;
         public event Action<double>? HashrateUpdated;
         public event Action<int, double>? BestDifficultyFound;
 
@@ -39,16 +39,16 @@ namespace BitcoinMinerConsole.Core
             if (_isRunning)
                 return;
 
-            _logger.LogInfo("Starting mining engine...");
+            _logger.LogMining("Starting mining engine...");
             
             int threadCount = _config.Mining.Threads;
             if (threadCount <= 0)
             {
                 threadCount = Environment.ProcessorCount;
-                _logger.LogInfo($"Auto-detected {threadCount} CPU cores");
+                _logger.LogMining($"Auto-detected {threadCount} CPU cores");
             }
 
-            _logger.LogInfo($"Starting {threadCount} mining threads");
+            _logger.LogMining($"Starting {threadCount} mining threads");
 
             // Create and start worker threads
             for (int i = 0; i < threadCount; i++)
@@ -57,18 +57,13 @@ namespace BitcoinMinerConsole.Core
                 worker.ShareFound += OnShareFound;
                 worker.HashrateUpdated += OnWorkerHashrateUpdated;
                 worker.BestDifficultyFound += OnBestDifficultyFound;
+                worker.Start();
                 _workers.Add(worker);
             }
-
-            // Start all workers
-            foreach (var worker in _workers)
-            {
-                worker.Start();
-            }
-
+            
             _isRunning = true;
             _statsDisplay.UpdateActiveThreads(ActiveWorkers);
-            _logger.LogSuccess($"Mining engine started with {threadCount} threads");
+            _logger.LogMining($"Mining engine started with {threadCount} threads");
 
             // Start hashrate monitoring
             _ = Task.Run(MonitorHashrateAsync, _cancellationTokenSource.Token);
@@ -79,7 +74,7 @@ namespace BitcoinMinerConsole.Core
             if (!_isRunning)
                 return;
 
-            _logger.LogInfo("Stopping mining engine...");
+            _logger.LogMining("Stopping mining engine...");
             _isRunning = false;
 
             _cancellationTokenSource.Cancel();
@@ -92,7 +87,7 @@ namespace BitcoinMinerConsole.Core
 
             _workers.Clear();
             _statsDisplay.UpdateActiveThreads(0);
-            _logger.LogInfo("Mining engine stopped");
+            _logger.LogMining("Mining engine stopped");
         }
 
         public void SetWork(WorkItem work)
@@ -143,27 +138,26 @@ namespace BitcoinMinerConsole.Core
         {
             lock (_workLock)
             {
-                if (_currentWorkItem != null)
+                _currentWorkItem ??= new WorkItem();
+
+                _currentWorkItem.UpdatePoolShareTargetAndDificulty(newDifficulty);
+                // Update all workers with new difficulty
+                foreach (var worker in _workers)
                 {
-                    _currentWorkItem.UpdatePoolShareTargetAndDificulty(newDifficulty);
-                    // Update all workers with new difficulty
-                    foreach (var worker in _workers)
-                    {
-                        worker.CurrentWork.PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty;
-                        worker.CurrentWork.PoolShareTarget = _currentWorkItem.PoolShareTarget;
-                    }
+                    worker.CurrentWork.PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty;
+                    worker.CurrentWork.PoolShareTarget = _currentWorkItem.PoolShareTarget;
                 }
             }
         }
 
-        private void OnShareFound(int workerId, uint nonce, string extraNonce2)
+        private void OnShareFound(int workerId, uint nonce, double difficulty)
         {
             lock (_workLock)
             {
                 if (_currentWorkItem != null)
                 {
                     _logger.LogShare($"Share found by worker {workerId}: nonce={nonce:x8}", true);
-                    ShareFound?.Invoke(nonce, extraNonce2);
+                    ShareFound?.Invoke(nonce, difficulty);
                     // Note: Share statistics will be updated only when pool responds
                 }
             }
@@ -177,8 +171,6 @@ namespace BitcoinMinerConsole.Core
         private void OnBestDifficultyFound(int workerId, double difficulty)
         {
             _statsDisplay.UpdateBestWorkerDifficulty(workerId, difficulty);
-            _logger.LogInfo($"Worker {workerId} achieved difficulty: {difficulty:N2}");
-            
             // Notify about potential new best difficulty record
             BestDifficultyFound?.Invoke(workerId, difficulty);
         }

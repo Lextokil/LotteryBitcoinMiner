@@ -3,7 +3,7 @@
     "url": "solo.ckpool.org",
     "port": 3333,
     "wallet": "bc1quuk6448yvxde48k7n96uc6d487pnycvdjf0p88",
-    "worker_name": "lextokil",
+    "worker_name": "lextokil-local",
     "password": "x"
   },
   "mining": {
@@ -27,5 +27,9 @@
     "show_banner": true,
     "colored_output": true,
     "stats_refresh_rate": 2
+  },
+  "statistics": {
+    "best_worker_difficulty": 1.2863236670869533,
+    "best_difficulty_date": "2025-07-01T19:22:18.8358364-03:00"
   }
 }
