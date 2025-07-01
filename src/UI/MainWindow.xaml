@@ -1,0 +1,154 @@
+<Window x:Class="BitcoinMinerConsole.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Bitcoin Miner WPF" Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF1E1E1E">
+    
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#FF404040"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF606060"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#FF2D2D30" Padding="10">
+            <StackPanel>
+                <TextBlock Text="BITCOIN MINER WPF" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FF00D4FF"/>
+                <TextBlock Text="solo.ckpool.org Mining Interface" FontSize="14" HorizontalAlignment="Center" Foreground="#FFAAAAAA"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Statistics Panel -->
+        <Border Grid.Row="1" Background="#FF2D2D30" Padding="10" Margin="5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Pool Information -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Pool Status:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="PoolStatusText" Text="Disconnected" Foreground="Red"/>
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="Worker:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="0" Grid.Column="3" x:Name="WorkerNameText" Text="-"/>
+                
+                <!-- Job Information -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Current Job:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="CurrentJobText" Text="-"/>
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="PoolShareDifficulty:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="1" Grid.Column="3" x:Name="PoolShareDifficultyText" Text="0"/>
+                
+                <!-- Performance -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Hashrate:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="HashrateText" Text="0 H/s"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Avg Hashrate:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="2" Grid.Column="3" x:Name="AvgHashrateText" Text="0 H/s"/>
+                
+                <!-- Shares -->
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Shares Accepted:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SharesAcceptedText" Text="0" Foreground="Green"/>
+                <TextBlock Grid.Row="3" Grid.Column="2" Text="Shares Rejected:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="3" Grid.Column="3" x:Name="SharesRejectedText" Text="0" Foreground="Red"/>
+                
+                <!-- Runtime -->
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Uptime:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="4" Grid.Column="1" x:Name="UptimeText" Text="0s"/>
+                <TextBlock Grid.Row="4" Grid.Column="2" Text="Total Hashes:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="4" Grid.Column="3" x:Name="TotalHashesText" Text="0"/>
+                
+                <!-- Lottery Mining Info -->
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="Mining Mode:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="5" Grid.Column="1" x:Name="MiningModeText" Text="Lottery" Foreground="#FF00D4FF"/>
+                <TextBlock Grid.Row="5" Grid.Column="2" Text="Random Seed:" FontWeight="Bold"/>
+                <TextBlock Grid.Row="5" Grid.Column="3" x:Name="RandomSeedText" Text="-"/>
+                
+                <!-- Best Historical Difficulty -->
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="🏆 Best Difficulty:" FontWeight="Bold" Foreground="Gold"/>
+                <TextBlock Grid.Row="6" Grid.Column="1" x:Name="BestDifficultyText" Text="0.00" Foreground="Gold"/>
+                <TextBlock Grid.Row="6" Grid.Column="2" Text="Achieved:" FontWeight="Bold" Foreground="Gold"/>
+                <TextBlock Grid.Row="6" Grid.Column="3" x:Name="BestDifficultyDateText" Text="Never" Foreground="Gold"/>
+            </Grid>
+        </Border>
+        
+        <!-- Logs Panel -->
+        <Grid Grid.Row="2" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Pool Events Log -->
+            <GroupBox Grid.Column="0" Header="Pool Events" Foreground="White" BorderBrush="#FF606060" Margin="0,0,2.5,0">
+                <ScrollViewer x:Name="PoolEventsScrollViewer" VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="PoolEventsTextBox" 
+                             Background="#FF1E1E1E" 
+                             Foreground="White" 
+                             FontFamily="Consolas" 
+                             FontSize="12"
+                             IsReadOnly="True"
+                             BorderThickness="0"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"/>
+                </ScrollViewer>
+            </GroupBox>
+            
+            <!-- Mining Events Log -->
+            <GroupBox Grid.Column="1" Header="Mining Events" Foreground="White" BorderBrush="#FF606060" Margin="2.5,0,0,0">
+                <ScrollViewer x:Name="MiningEventsScrollViewer" VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="MiningEventsTextBox" 
+                             Background="#FF1E1E1E" 
+                             Foreground="White" 
+                             FontFamily="Consolas" 
+                             FontSize="12"
+                             IsReadOnly="True"
+                             BorderThickness="0"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"/>
+                </ScrollViewer>
+            </GroupBox>
+        </Grid>
+        
+        <!-- Control Panel -->
+        <Border Grid.Row="3" Background="#FF2D2D30" Padding="10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="StartButton" Content="Start Mining" Click="StartButton_Click" Width="120"/>
+                <Button x:Name="StopButton" Content="Stop Mining" Click="StopButton_Click" Width="120" IsEnabled="False"/>
+                <Button x:Name="RestartButton" Content="Restart" Click="RestartButton_Click" Width="120"/>
+                <Button x:Name="ConfigButton" Content="Configuration" Click="ConfigButton_Click" Width="120"/>
+                <Button x:Name="ClearLogsButton" Content="Clear Logs" Click="ClearLogsButton_Click" Width="120"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,5 +1,4 @@
-using System;
-using System.Windows;
+
 using BitcoinMinerConsole.UI;
 
 namespace BitcoinMinerConsole
