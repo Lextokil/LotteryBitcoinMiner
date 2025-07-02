@@ -1,4 +1,4 @@
-namespace BitcoinMinerConsole.Network;
+namespace LotteryBitcoinMiner.Network;
 
 public static class StratumMethods
 {

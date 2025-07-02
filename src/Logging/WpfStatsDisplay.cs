@@ -1,7 +1,7 @@
-using BitcoinMinerConsole.Configuration;
-using BitcoinMinerConsole.UI;
+using LotteryBitcoinMiner.Configuration;
+using LotteryBitcoinMiner.UI;
 
-namespace BitcoinMinerConsole.Logging
+namespace LotteryBitcoinMiner.Logging
 {
     public class WpfStatsDisplay : IStatsDisplay
     {

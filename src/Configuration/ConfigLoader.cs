@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Text;
 
-namespace BitcoinMinerConsole.Configuration
+namespace LotteryBitcoinMiner.Configuration
 {
     public static class ConfigLoader
     {

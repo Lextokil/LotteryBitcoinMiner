@@ -1,8 +1,8 @@
-using BitcoinMinerConsole.Configuration;
-using BitcoinMinerConsole.Logging;
+using LotteryBitcoinMiner.Configuration;
+using LotteryBitcoinMiner.Logging;
 using System.Diagnostics;
 
-namespace BitcoinMinerConsole.Core
+namespace LotteryBitcoinMiner.Core
 {
     public class MiningEngine : IDisposable
     {

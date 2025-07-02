@@ -1,6 +1,6 @@
-using BitcoinMinerConsole.UI;
+using LotteryBitcoinMiner.UI;
 
-namespace BitcoinMinerConsole.Logging
+namespace LotteryBitcoinMiner.Logging
 {
     public class WpfLogger : ILogger
     {

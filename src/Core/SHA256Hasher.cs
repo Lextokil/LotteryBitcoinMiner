@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
-namespace BitcoinMinerConsole.Core
+namespace LotteryBitcoinMiner.Core
 {
     public static class SHA256Hasher
     {

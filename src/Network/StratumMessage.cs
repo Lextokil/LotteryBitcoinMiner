@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace BitcoinMinerConsole.Network
+namespace LotteryBitcoinMiner.Network
 {
     public class StratumMessage
     {

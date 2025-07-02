@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace BitcoinMinerConsole.Configuration
+namespace LotteryBitcoinMiner.Configuration
 {
     public class MinerConfig
     {

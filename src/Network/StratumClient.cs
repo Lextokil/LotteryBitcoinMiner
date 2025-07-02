@@ -1,9 +1,9 @@
 using System.Net.Sockets;
 using System.Text;
-using BitcoinMinerConsole.Configuration;
-using BitcoinMinerConsole.Core;
+using LotteryBitcoinMiner.Configuration;
+using LotteryBitcoinMiner.Core;
 
-namespace BitcoinMinerConsole.Network
+namespace LotteryBitcoinMiner.Network
 {
     public class StratumClient : IDisposable
     {

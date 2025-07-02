@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace BitcoinMinerConsole.Core
+namespace LotteryBitcoinMiner.Core
 {
     public class WorkItem
     {

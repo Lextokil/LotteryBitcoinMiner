@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <StartupObject>BitcoinMinerConsole.Program</StartupObject>
+    <StartupObject>LotteryBitcoinMiner.Program</StartupObject>
     <AssemblyTitle>Bitcoin Miner WPF</AssemblyTitle>
     <AssemblyDescription>A real Bitcoin miner WPF application connecting to solo.ckpool</AssemblyDescription>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>

@@ -1,4 +1,4 @@
-namespace BitcoinMinerConsole.Logging
+namespace LotteryBitcoinMiner.Logging
 {
     public interface ILogger
     {

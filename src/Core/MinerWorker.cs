@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using BitcoinMinerConsole.Configuration;
-using BitcoinMinerConsole.Logging;
+using LotteryBitcoinMiner.Configuration;
+using LotteryBitcoinMiner.Logging;
 
-namespace BitcoinMinerConsole.Core;
+namespace LotteryBitcoinMiner.Core;
 
 public class MinerWorker
 {

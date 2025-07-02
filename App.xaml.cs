@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace BitcoinMinerConsole
+namespace LotteryBitcoinMiner
 {
     public partial class App : Application
     {

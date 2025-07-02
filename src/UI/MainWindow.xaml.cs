@@ -1,11 +1,11 @@
 using System.Windows;
 using System.Windows.Threading;
-using BitcoinMinerConsole.Configuration;
-using BitcoinMinerConsole.Core;
-using BitcoinMinerConsole.Logging;
-using BitcoinMinerConsole.Network;
+using LotteryBitcoinMiner.Configuration;
+using LotteryBitcoinMiner.Core;
+using LotteryBitcoinMiner.Logging;
+using LotteryBitcoinMiner.Network;
 
-namespace BitcoinMinerConsole.UI
+namespace LotteryBitcoinMiner.UI
 {
     public partial class MainWindow : Window
     {

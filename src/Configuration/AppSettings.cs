@@ -1,6 +1,6 @@
 using System.Configuration;
 
-namespace BitcoinMinerConsole.Configuration
+namespace LotteryBitcoinMiner.Configuration
 {
     public class AppSettings : ApplicationSettingsBase
     {

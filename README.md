@@ -25,7 +25,7 @@ Um minerador de Bitcoin real em C# que se conecta ao pool solo.ckpool.org para m
 1. Clone ou baixe o projeto
 2. Navegue até o diretório do projeto:
    ```bash
-   cd BitcoinMinerConsole
+   cd LotteryBitcoinMiner
    ```
 
 3. Restaure as dependências:
@@ -90,7 +90,7 @@ dotnet run
 Ou execute o binário compilado:
 
 ```bash
-dotnet BitcoinMinerConsole.dll
+dotnet LotteryBitcoinMiner.dll
 ```
 
 ## 🎮 Comandos Durante Execução
@@ -153,7 +153,7 @@ O projeto está organizado em módulos:
 ### Estrutura do Projeto
 
 ```
-BitcoinMinerConsole/
+LotteryBitcoinMiner/
 ├── src/
 │   ├── Core/                 # Motor de mineração
 │   ├── Network/              # Comunicação Stratum

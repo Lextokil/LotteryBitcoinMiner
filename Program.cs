@@ -1,7 +1,7 @@
 
-using BitcoinMinerConsole.UI;
+using LotteryBitcoinMiner.UI;
 
-namespace BitcoinMinerConsole
+namespace LotteryBitcoinMiner
 {
     public class Program
     {

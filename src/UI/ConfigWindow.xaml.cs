@@ -1,9 +1,9 @@
 using System.IO;
 using System.Text.Json;
 using System.Windows;
-using BitcoinMinerConsole.Configuration;
+using LotteryBitcoinMiner.Configuration;
 
-namespace BitcoinMinerConsole.UI
+namespace LotteryBitcoinMiner.UI
 {
     public partial class ConfigWindow : Window
     {
