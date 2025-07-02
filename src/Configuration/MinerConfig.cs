@@ -16,8 +16,6 @@ namespace BitcoinMinerConsole.Configuration
         [JsonProperty("display")]
         public DisplaySettings Display { get; set; } = new DisplaySettings();
 
-        [JsonProperty("statistics")]
-        public StatisticsSettings Statistics { get; set; } = new StatisticsSettings();
     }
 
     public class PoolSettings
@@ -42,9 +40,6 @@ namespace BitcoinMinerConsole.Configuration
     {
         [JsonProperty("threads")]
         public int Threads { get; set; } = 0; // 0 = auto-detect
-
-        [JsonProperty("target_temp")]
-        public int TargetTemp { get; set; } = 80;
 
         [JsonProperty("max_nonce")]
         public uint MaxNonce { get; set; } = uint.MaxValue;
@@ -99,5 +94,24 @@ namespace BitcoinMinerConsole.Configuration
 
         [JsonProperty("best_difficulty_date")]
         public DateTime? BestDifficultyDate { get; set; } = null;
+    }
+
+    // Helper class for migration from config file to app settings
+    internal class MinerConfigWithStats
+    {
+        [JsonProperty("pool")]
+        public PoolSettings Pool { get; set; } = new PoolSettings();
+
+        [JsonProperty("mining")]
+        public MiningSettings Mining { get; set; } = new MiningSettings();
+
+        [JsonProperty("logging")]
+        public LoggingSettings Logging { get; set; } = new LoggingSettings();
+
+        [JsonProperty("display")]
+        public DisplaySettings Display { get; set; } = new DisplaySettings();
+
+        [JsonProperty("statistics")]
+        public StatisticsSettings? Statistics { get; set; }
     }
 }

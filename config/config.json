@@ -7,9 +7,7 @@
     "password": "x"
   },
   "mining": {
-    "threads": 10,
-    "intensity": "high",
-    "target_temp": 80,
+    "threads": 20,
     "max_nonce": 4294967295,
     "random_seed": null,
     "avoid_recent_duplicates": true,
@@ -27,9 +25,5 @@
     "show_banner": true,
     "colored_output": true,
     "stats_refresh_rate": 2
-  },
-  "statistics": {
-    "best_worker_difficulty": 1.2863236670869533,
-    "best_difficulty_date": "2025-07-01T19:22:18.8358364-03:00"
   }
 }

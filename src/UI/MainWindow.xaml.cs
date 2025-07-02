@@ -427,39 +427,34 @@ namespace BitcoinMinerConsole.UI
 
         private void LoadBestDifficultyStats()
         {
-            if (_config?.Statistics != null)
+            var appSettings = AppSettings.Instance;
+            BestDifficultyText.Text = appSettings.BestWorkerDifficulty.ToString("N2");
+            
+            if (appSettings.BestDifficultyDateTime.HasValue)
             {
-                BestDifficultyText.Text = _config.Statistics.BestWorkerDifficulty.ToString("N2");
-                
-                if (_config.Statistics.BestDifficultyDate.HasValue)
-                {
-                    BestDifficultyDateText.Text = _config.Statistics.BestDifficultyDate.Value.ToString("dd/MM/yyyy HH:mm");
-                }
-                else
-                {
-                    BestDifficultyDateText.Text = "Never";
-                }
-                
-                if (_config.Statistics.BestWorkerDifficulty > 0)
-                {
-                    LogMiningEvent($"🏆 Historical best difficulty: {_config.Statistics.BestWorkerDifficulty:N2}");
-                }
+                BestDifficultyDateText.Text = appSettings.BestDifficultyDateTime.Value.ToString("dd/MM/yyyy HH:mm");
+            }
+            else
+            {
+                BestDifficultyDateText.Text = "Never";
+            }
+            
+            if (appSettings.BestWorkerDifficulty > 0)
+            {
+                LogMiningEvent($"🏆 Historical best difficulty: {appSettings.BestWorkerDifficulty:N2}");
             }
         }
 
         public void UpdateBestDifficulty(double difficulty)
         {
-            if (_config?.Statistics != null && difficulty > _config.Statistics.BestWorkerDifficulty)
+            var appSettings = AppSettings.Instance;
+            if (difficulty > appSettings.BestWorkerDifficulty)
             {
-                _config.Statistics.BestWorkerDifficulty = difficulty;
-                _config.Statistics.BestDifficultyDate = DateTime.Now;
+                appSettings.UpdateBestDifficulty(difficulty);
                 
                 // Update interface
                 BestDifficultyText.Text = difficulty.ToString("N2");
                 BestDifficultyDateText.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                
-                // Save configuration
-                ConfigLoader.SaveConfig(_config);
                 
                 // Log the new record
                 LogMiningEvent($"🏆 NOVO RECORDE! Melhor dificuldade: {difficulty:N2}");

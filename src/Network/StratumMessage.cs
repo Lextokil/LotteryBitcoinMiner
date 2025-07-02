@@ -109,22 +109,4 @@ namespace BitcoinMinerConsole.Network
     }
    
 
-    public class StratumError
-    {
-        [JsonProperty("code")]
-        public int Code { get; set; }
-
-        [JsonProperty("message")]
-        public string Message { get; set; } = "";
-
-        public static class Codes
-        {
-            public const int UnknownMethod = 20;
-            public const int JobNotFound = 21;
-            public const int DuplicateShare = 22;
-            public const int LowDifficultyShare = 23;
-            public const int UnauthorizedWorker = 24;
-            public const int NotSubscribed = 25;
-        }
-    }
 }

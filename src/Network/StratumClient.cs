@@ -61,7 +61,7 @@ namespace BitcoinMinerConsole.Network
 
         private void ConnectCallback(IAsyncResult ar)
         {
-            if (!_tcpClient.Connected)
+            if (_tcpClient?.Connected != true)
                 return;
             try
             {
@@ -351,24 +351,24 @@ namespace BitcoinMinerConsole.Network
 
         private void HandleNotification(StratumMessage message)
         {
-            switch (message.Method)
-            {
-                case StratumMethods.Notify:
-                    HandleMiningNotify(message); // Ok
-                    break;
-                    
-                case StratumMethods.SetDifficulty:
-                    HandleSetPoolDifficulty(message); // Ok
-                    break;
-                    
-                case StratumMethods.Reconnect:
-                    Task.Run(async () => await HandleReconnect()); // Ok
-                    break;
-                    
-                case StratumMethods.ShowMessage:
-                    HandleShowMessage(message); // Ok
-                    break;
-            }
+                switch (message.Method)
+                {
+                    case StratumMethods.Notify:
+                        HandleMiningNotify(message);
+                        break;
+                        
+                    case StratumMethods.SetDifficulty:
+                        HandleSetPoolDifficulty(message);
+                        break;
+                        
+                    case StratumMethods.Reconnect:
+                        Task.Run(async () => await HandleReconnect());
+                        break;
+                        
+                    case StratumMethods.ShowMessage:
+                        HandleShowMessage(message);
+                        break;
+                }
         }
 
         private void HandleMiningNotify(StratumMessage message)

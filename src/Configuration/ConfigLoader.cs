@@ -22,6 +22,27 @@ namespace BitcoinMinerConsole.Configuration
                 }
 
                 string jsonContent = File.ReadAllText(path, Encoding.UTF8);
+                
+                // Try to deserialize with statistics first (for migration)
+                var configWithStats = JsonConvert.DeserializeObject<MinerConfigWithStats>(jsonContent);
+                if (configWithStats?.Statistics != null)
+                {
+                    // Migrate statistics to app settings
+                    AppSettings.Instance.LoadFromStatisticsSettings(configWithStats.Statistics);
+                    
+                    // Remove statistics from config file
+                    var configWithoutStats = new MinerConfig
+                    {
+                        Pool = configWithStats.Pool,
+                        Mining = configWithStats.Mining,
+                        Logging = configWithStats.Logging,
+                        Display = configWithStats.Display
+                    };
+                    
+                    SaveConfig(configWithoutStats, path);
+                    return configWithoutStats;
+                }
+                
                 var config = JsonConvert.DeserializeObject<MinerConfig>(jsonContent);
                 
                 if (config == null)

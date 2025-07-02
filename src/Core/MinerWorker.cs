@@ -16,15 +16,12 @@ public class MinerWorker
     private bool _isRunning = false;
     private long _totalHashes = 0;
     private double _currentHashrate = 0;
-    private DateTime _lastHashrateUpdate = DateTime.Now;
 
     public WorkItem? CurrentWork => _currentWork;
 
     // Lottery mining fields
     private readonly Random _random;
     private readonly HashSet<uint> _testedNonces;
-    private long _noncesGenerated = 0;
-    private long _duplicatesAvoided = 0;
 
     // Events
     public event Action<int, uint, double>? ShareFound;
@@ -118,8 +115,6 @@ public class MinerWorker
             // Generate random nonce within this worker's assigned range
             uint nonce = GenerateRandomNonceInRange(work.StartNonce, work.EndNonce);
 
-            Interlocked.Increment(ref _noncesGenerated);
-
             // Test the nonce
             hashCount = await TestNonce(work, nonce, hashCount, stopwatch);
 
@@ -199,7 +194,6 @@ public class MinerWorker
         {
             _currentHashrate = hashes / elapsed.TotalSeconds;
             HashrateUpdated?.Invoke(_workerId, _currentHashrate);
-            _lastHashrateUpdate = DateTime.Now;
         }
     }
 }

@@ -144,8 +144,11 @@ namespace BitcoinMinerConsole.Core
                 // Update all workers with new difficulty
                 foreach (var worker in _workers)
                 {
-                    worker.CurrentWork.PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty;
-                    worker.CurrentWork.PoolShareTarget = _currentWorkItem.PoolShareTarget;
+                    if (worker.CurrentWork != null)
+                    {
+                        worker.CurrentWork.PoolShareDifficulty = _currentWorkItem.PoolShareDifficulty;
+                        worker.CurrentWork.PoolShareTarget = _currentWorkItem.PoolShareTarget;
+                    }
                 }
             }
         }
@@ -228,8 +231,6 @@ namespace BitcoinMinerConsole.Core
             }
         }
 
-        // Removed OnShareResult method - share statistics are now updated 
-        // only by the pool response in MainWindow via StratumClient.ShareResult event
 
         public void Dispose()
         {
