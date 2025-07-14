@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <StartupObject>LotteryBitcoinMiner.Program</StartupObject>
-    <AssemblyTitle>Bitcoin Miner WPF</AssemblyTitle>
-    <AssemblyDescription>A real Bitcoin miner WPF application connecting to solo.ckpool</AssemblyDescription>
+    <AssemblyTitle>BITCOIN LOTTERY MINER</AssemblyTitle>
+    <AssemblyDescription>A real BITCOIN LOTTERY MINER application connecting to solo.ckpool</AssemblyDescription>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>

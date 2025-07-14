@@ -34,7 +34,7 @@
         <!-- Header -->
         <Border Grid.Row="0" Background="#FF2D2D30" Padding="10">
             <StackPanel>
-                <TextBlock Text="BITCOIN MINER WPF" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FF00D4FF"/>
+                <TextBlock Text="BITCOIN LOTTERY MINER" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FF00D4FF"/>
                 <TextBlock Text="solo.ckpool.org Mining Interface" FontSize="14" HorizontalAlignment="Center" Foreground="#FFAAAAAA"/>
             </StackPanel>
         </Border>

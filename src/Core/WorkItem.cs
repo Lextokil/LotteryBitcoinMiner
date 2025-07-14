@@ -1,4 +1,5 @@
 using System.Text;
+using System.Numerics;
 
 namespace LotteryBitcoinMiner.Core
 {
@@ -97,7 +98,7 @@ namespace LotteryBitcoinMiner.Core
                 return;
             }
 
-            // Convert bits to target
+            // Convert bits to target using correct Bitcoin algorithm
             uint bits = Convert.ToUInt32(Bits, 16);
             uint exponent = bits >> 24;
             uint mantissa = bits & 0x00ffffff;
@@ -111,27 +112,19 @@ namespace LotteryBitcoinMiner.Core
                 Target[30] = (byte)(mantissa >> 8);
                 Target[31] = (byte)mantissa;
             }
-            else
+            else if (exponent < 32)
             {
                 int offset = (int)(32 - exponent);
-                if (offset >= 0 && offset < 29)
+                if (offset >= 0 && offset <= 29)
                 {
                     Target[offset] = (byte)(mantissa >> 16);
-                    Target[offset + 1] = (byte)(mantissa >> 8);
-                    Target[offset + 2] = (byte)mantissa;
+                    if (offset + 1 < 32) Target[offset + 1] = (byte)(mantissa >> 8);
+                    if (offset + 2 < 32) Target[offset + 2] = (byte)mantissa;
                 }
             }
 
-            // Calculate difficulty
-            var maxTarget = new byte[32];
-            maxTarget[0] = 0x00;
-            maxTarget[1] = 0x00;
-            maxTarget[2] = 0x00;
-            maxTarget[3] = 0xFF;
-            maxTarget[4] = 0xFF;
-            // Rest are zeros
-
-            Difficulty = CalculateDifficulty(maxTarget, Target);
+            // Calculate difficulty using corrected method
+            Difficulty = CalculateDifficultyFromTarget(Target);
         }
 
         public void UpdatePoolShareTargetAndDificulty(double poolDifficulty)
@@ -139,37 +132,25 @@ namespace LotteryBitcoinMiner.Core
             if (poolDifficulty <= 0)
                 return;
 
-            // Calculate target from pool difficulty
+            // Calculate target from pool difficulty using correct max target
             // Target = max_target / difficulty
-            var maxTarget = new byte[32];
-            maxTarget[0] = 0x00;
-            maxTarget[1] = 0x00;
-            maxTarget[2] = 0x00;
-            maxTarget[3] = 0xFF;
-            maxTarget[4] = 0xFF;
+            var maxTargetBytes = new byte[32];
+            maxTargetBytes[4] = 0xFF;
+            maxTargetBytes[5] = 0xFF;
             // Rest are zeros
 
-            // Convert max target to big integer value
-            double maxTargetValue = 0;
-            for (int i = 0; i < 32; i++)
-            {
-                maxTargetValue = maxTargetValue * 256 + maxTarget[i];
-            }
-
-            // Calculate new target value
-            double newTargetValue = maxTargetValue / poolDifficulty;
+            // Use BigInteger for precise calculation
+            var maxTarget = new BigInteger(maxTargetBytes, isUnsigned: true, isBigEndian: true);
+            var poolTarget = maxTarget / (BigInteger)poolDifficulty;
 
             // Convert back to byte array
             PoolShareTarget = new byte[32];
-            double tempValue = newTargetValue;
+            var targetBytes = poolTarget.ToByteArray(isUnsigned: true, isBigEndian: true);
             
-            // Fill target bytes from least significant to most significant
-            for (int i = 31; i >= 0; i--)
-            {
-                PoolShareTarget[i] = (byte)(tempValue % 256);
-                tempValue = Math.Floor(tempValue / 256);
-                if (tempValue == 0) break;
-            }
+            // Copy bytes, ensuring we don't exceed 32 bytes
+            int copyLength = Math.Min(targetBytes.Length, 32);
+            int offset = 32 - copyLength;
+            Array.Copy(targetBytes, 0, PoolShareTarget, offset, copyLength);
 
             // Update difficulty to match pool difficulty
             PoolShareDifficulty = poolDifficulty;
@@ -224,32 +205,24 @@ namespace LotteryBitcoinMiner.Core
 
         public double CalculateHashDifficulty(byte[] hash)
         {
-            // Calculate the difficulty of a given hash
+            // Calculate the difficulty of a given hash using correct max target
             // Difficulty = max_target / hash_as_number
             
-            // Convert hash to a big integer-like value for comparison
-            double hashValue = 0;
-            double maxTargetValue = 0;
-            
-            // Use the maximum target (difficulty 1)
-            var maxTarget = new byte[32];
-            maxTarget[0] = 0x00;
-            maxTarget[1] = 0x00;
-            maxTarget[2] = 0x00;
-            maxTarget[3] = 0xFF;
-            maxTarget[4] = 0xFF;
+            // Bitcoin max target: 0x00000000FFFF0000000000000000000000000000000000000000000000000000
+            var maxTargetBytes = new byte[32];
+            maxTargetBytes[4] = 0xFF;
+            maxTargetBytes[5] = 0xFF;
             // Rest are zeros
             
-            // Calculate values (simplified approach for display purposes)
-            for (int i = 0; i < 8; i++) // Use first 8 bytes for calculation
-            {
-                hashValue = hashValue * 256 + hash[i];
-                maxTargetValue = maxTargetValue * 256 + maxTarget[i];
-            }
+            // Use BigInteger for precise calculation
+            var maxTarget = new BigInteger(maxTargetBytes, isUnsigned: true, isBigEndian: true);
+            var hashValue = new BigInteger(hash, isUnsigned: true, isBigEndian: true);
             
             if (hashValue == 0) return double.MaxValue; // Theoretical maximum
             
-            return maxTargetValue / hashValue;
+            // Calculate difficulty = max_target / hash_value
+            var difficulty = (double)maxTarget / (double)hashValue;
+            return difficulty;
         }
 
         private static byte[] HexStringToBytes(string hex)
@@ -274,20 +247,35 @@ namespace LotteryBitcoinMiner.Core
             return Convert.ToHexString(bytes).ToLowerInvariant();
         }
 
+        private static double CalculateDifficultyFromTarget(byte[] target)
+        {
+            // Bitcoin max target: 0x00000000FFFF0000000000000000000000000000000000000000000000000000
+            var maxTargetBytes = new byte[32];
+            maxTargetBytes[4] = 0xFF;
+            maxTargetBytes[5] = 0xFF;
+            // Rest are zeros (positions 0-3 and 6-31)
+            
+            // Use BigInteger for precise calculation
+            var maxTarget = new BigInteger(maxTargetBytes, isUnsigned: true, isBigEndian: true);
+            var currentTarget = new BigInteger(target, isUnsigned: true, isBigEndian: true);
+            
+            if (currentTarget == 0) return double.MaxValue;
+            
+            // Calculate difficulty = max_target / current_target
+            var difficulty = (double)maxTarget / (double)currentTarget;
+            return difficulty;
+        }
+
         private static double CalculateDifficulty(byte[] maxTarget, byte[] currentTarget)
         {
-            // Simple difficulty calculation
-            // In reality, this would be more complex
-            double maxValue = 0;
-            double currentValue = 0;
-
-            for (int i = 0; i < 32; i++)
-            {
-                maxValue = maxValue * 256 + maxTarget[i];
-                currentValue = currentValue * 256 + currentTarget[i];
-            }
-
-            return currentValue > 0 ? maxValue / currentValue : 1.0;
+            // Legacy method - kept for compatibility
+            // Use BigInteger for more precise calculation
+            var maxTargetBig = new BigInteger(maxTarget, isUnsigned: true, isBigEndian: true);
+            var currentTargetBig = new BigInteger(currentTarget, isUnsigned: true, isBigEndian: true);
+            
+            if (currentTargetBig == 0) return 1.0;
+            
+            return (double)maxTargetBig / (double)currentTargetBig;
         }
 
         public override string ToString()

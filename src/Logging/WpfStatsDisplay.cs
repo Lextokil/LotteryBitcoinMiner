@@ -156,7 +156,7 @@ namespace LotteryBitcoinMiner.Logging
 
             _mainWindow.Dispatcher.Invoke(() =>
             {
-                _mainWindow.LogMiningEvent("=== BITCOIN MINER WPF v1.0 ===");
+                _mainWindow.LogMiningEvent("=== BITCOIN LOTTERY MINER v1.0 ===");
                 _mainWindow.LogMiningEvent("solo.ckpool.org Mining Interface");
                 _mainWindow.LogMiningEvent("================================");
             });
