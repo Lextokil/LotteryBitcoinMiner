@@ -162,7 +162,7 @@ namespace LotteryBitcoinMiner.Network
                 var submitMessage = StratumMessage.CreateRequest(
                     _messageId,
                     StratumMethods.Submit,
-                    _config.Pool.Wallet,
+                    string.Concat(_config.Pool.Wallet, ".", _config.Pool.WorkerName),
                     work.JobId,
                     work.ExtraNonce2,
                     work.Time,
@@ -196,8 +196,8 @@ namespace LotteryBitcoinMiner.Network
                 var json = message.ToJson() + "\n";
                 var bytes = Encoding.ASCII.GetBytes(json);
                 
-                _stream.Write(bytes, 0, bytes.Length);
                 StatusChanged?.Invoke($"Sending: {json.Trim()}");
+                _stream.Write(bytes, 0, bytes.Length);
             }
             catch (Exception ex)
             {
@@ -317,8 +317,8 @@ namespace LotteryBitcoinMiner.Network
                 {
                     case StratumMethods.Subscribe:
                         HandleSubscribeResponse(message);
-                        _isSubscribed = true;
                         StatusChanged?.Invoke("Subscribed to mining");
+                        _isSubscribed = true;
                         break;
                         
                     case StratumMethods.Authorize:
